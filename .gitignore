@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.ipynb_checkpoints/
+datasets/
+.claude/
+.env
+h2o_*.log
+H2OAutoML_*/
