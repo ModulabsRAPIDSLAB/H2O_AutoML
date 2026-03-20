@@ -145,10 +145,11 @@ uv pip install h2o jupyter pandas matplotlib seaborn
 ### 5. 데이터셋 다운로드
 
 ```bash
-# datasets 폴더 생성 + Airlines 데이터셋 다운로드 (~580MB)
+# datasets 폴더 생성 + Kaggle 신용카드 사기거래 데이터셋 다운로드
+# 출처: https://www.kaggle.com/datasets/kartik2112/fraud-detection
 mkdir -p datasets
-curl -L -o datasets/airlines_all.05p.csv \
-  "https://s3.amazonaws.com/h2o-public-test-data/bigdata/laptop/airlines_all.05p.csv"
+# Kaggle에서 credit_card_transactions.csv를 다운로드하여 datasets/ 폴더에 배치
+# kaggle datasets download -d kartik2112/fraud-detection -p datasets/ --unzip
 ```
 
 ### 6. Jupyter Notebook 실행
@@ -258,7 +259,7 @@ H2O_AutoML/
 │   ├── 01_h2o_automl_demo.ipynb       # 라이브 데모 (데이터 로드 → AutoML → 결과 분석)
 │   └── 02_explainability.ipynb        # 모델 설명 가능성 시각화
 ├── datasets/                          # 데이터셋 (gitignore)
-│   └── airlines_all.05p.csv           # Airlines ~580MB
+│   └── credit_card_transactions.csv   # Kaggle 신용카드 사기거래 (~129만 건)
 ├── assets/                            # 발표용 이미지
 │   └── h2o-automl-logo.png
 ├── main.py
@@ -271,7 +272,7 @@ H2O_AutoML/
 ## 발표 흐름 (10분)
 
 ### Phase 1 — 런타임 시작 (1분)
-H2O 클러스터 초기화 후 Airlines 데이터셋(~580MB)으로 AutoML 학습 시작.
+H2O 클러스터 초기화 후 Kaggle 신용카드 사기거래 데이터셋(~129만 건)으로 AutoML 학습 시작.
 `max_runtime_secs=300`으로 설정하여 약 5분간 백그라운드 학습.
 
 ### Phase 2 — H2O AutoML 설명 (5분)
