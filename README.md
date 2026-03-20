@@ -11,7 +11,9 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.9.4-3776AB?logo=python&logoColor=white" alt="Python"/>
-  <img src="https://img.shields.io/badge/JVM-Java%2017+-ED8B00?logo=openjdk&logoColor=white" alt="Java"/>
+  <img src="https://img.shields.io/badge/JVM-Java%208~17-ED8B00?logo=openjdk&logoColor=white" alt="Java"/>
+  <img src="https://img.shields.io/badge/General-Java%2017-2ea44f?logo=openjdk&logoColor=white" alt="General Java 17"/>
+  <img src="https://img.shields.io/badge/Hadoop-Java%2011-orange?logo=apachehadoop&logoColor=white" alt="Hadoop Java 11"/>
   <img src="https://img.shields.io/badge/H2O-3.46.0.10-FFD700?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PHRleHQgeT0iMjAiIGZvbnQtc2l6ZT0iMjAiPvCfkqc8L3RleHQ+PC9zdmc+&logoColor=white" alt="H2O"/>
   <img src="https://img.shields.io/badge/Package%20Manager-uv-DE5FE9?logo=uv&logoColor=white" alt="uv"/>
   <img src="https://img.shields.io/badge/pyenv-3.9.4-green?logo=pyenv&logoColor=white" alt="pyenv"/>
@@ -28,12 +30,63 @@
 | Dependency | Required Version | Note |
 |:----------:|:----------------:|:-----|
 | **Python** | `3.6 ~ 3.11` (본 레포: `3.9.4`) | H2O 공식 지원 범위. `3.12+`는 미지원 |
-| **Java (JVM)** | `17+` (OpenJDK 권장) | H2O 런타임 엔진. 반드시 사전 설치 필요 |
+| **Java (JVM)** | `8 ~ 17` (본 레포: `17`) | H2O 런타임 엔진. General vs Hadoop에 따라 상이 (아래 참조) |
 | **H2O** | `3.46.0.10` | 현재 최신 안정 버전 |
 | **XGBoost GPU** | CUDA `8+` + NVIDIA GPU | 선택사항. CPU-only 환경에서도 동작 |
 | **OS** | Linux / macOS (Intel) | Apple Silicon(M1+)에서 XGBoost 비활성 |
 | **uv** | `0.1+` | Python 패키지 매니저 (pip 대체) |
 | **pyenv** | `2.0+` | Python 버전 관리 |
+
+### Java 버전: General vs Hadoop — 왜 나뉘는가?
+
+H2O는 JVM 위에서 동작하기 때문에 Java 버전이 핵심 의존성입니다.
+그런데 공식 문서를 보면 **두 가지 다른 Java 요구사항**이 존재합니다:
+
+| 배포 형태 | 지원 Java 버전 | 권장 |
+|:---------:|:--------------:|:----:|
+| **General** (Standalone / Local) | `8, 9, 10, 11, 12, 13, 14, 15, 16, 17` | **17** |
+| **Hadoop** (YARN / MapReduce) | `8, 11` 만 가능 | **11** |
+
+#### 왜 Hadoop에서는 Java 17을 못 쓰는가?
+
+이 제한은 **H2O의 문제가 아니라 Apache Hadoop 자체의 제약**입니다.
+
+1. **Java 17의 Strong Encapsulation**: Java 17은 deprecated API를 제거하고 모듈 시스템을 강화했습니다. Hadoop 내부에서 사용하던 `sun.misc.Unsafe` 등의 internal JDK API 접근이 차단됩니다.
+
+2. **Hadoop의 보수적 Java 정책**: Apache Hadoop 3.3.x (현재 주력 버전)는 공식적으로 Java 8(컴파일+런타임)과 Java 11(런타임만)만 지원합니다. Java 17 런타임 지원은 [HADOOP-18887](https://issues.apache.org/jira/browse/HADOOP-18887)에서 진행 중이나 아직 안정 릴리즈에 미포함입니다. (2026년 3월 기준)
+
+3. **H2O on Hadoop = Hadoop의 JVM 위에서 실행**: H2O가 Hadoop 클러스터에서 YARN Job으로 실행될 때, Hadoop 클러스터의 JVM 버전을 따라야 합니다. 즉, 클러스터가 Java 11이면 H2O도 Java 11로 실행됩니다.
+
+```
+┌─────────────────────────────────────────────────┐
+│  General (Standalone)                           │
+│  ┌───────────────────────────────────────────┐  │
+│  │  H2O JVM (Java 8~17 선택 가능)            │  │
+│  │  → 로컬 머신에서 직접 실행                 │  │
+│  │  → Java 17 권장 (최신 성능 + GC 개선)     │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  Hadoop (YARN/MapReduce)                        │
+│  ┌───────────────────────────────────────────┐  │
+│  │  Hadoop Cluster JVM (Java 8 or 11)        │  │
+│  │  └─ H2O Worker (Hadoop의 JVM 버전 상속)   │  │
+│  │     → Java 11 권장                        │  │
+│  │     → Java 17 사용 불가 (Hadoop 미지원)    │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
+
+#### H2O의 Java 지원 히스토리
+
+| H2O 버전 | 시기 | Java 변경사항 |
+|:--------:|:----:|:-------------|
+| 3.30.1.1 | 2020.08 | Java 14 공식 지원 추가 |
+| 3.32.1.1 | 2021.03 | Java 15 지원 추가 |
+| 3.36.0.1 | 2021.12 | **Java 16, 17 공식 지원** (Gradle 7 업그레이드) |
+| 3.46.0.x | 현재 | Docker 이미지 Java 11 → 17 전환. **Java 21은 미지원** |
+
+> **본 레포는 Standalone(General) 환경**이므로 Java 17을 사용합니다.
+> Hadoop 클러스터 환경에서 실행할 경우 Java 11로 전환이 필요합니다.
 
 ---
 
@@ -42,7 +95,7 @@
 ### 0. 사전 요구사항 확인
 
 ```bash
-# Java 17+ 확인 (없으면 brew install openjdk@17)
+# Java 8~17 확인 (General 환경 권장: 17 / 없으면 brew install openjdk@17)
 java -version
 
 # pyenv 확인 (없으면 brew install pyenv)
