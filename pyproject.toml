@@ -11,4 +11,5 @@ dependencies = [
     "matplotlib>=3.5",
     "seaborn>=0.12",
     "tqdm>=4.67.3",  # notebook progress bars
+    "numpy<2.0.0",
 ]
