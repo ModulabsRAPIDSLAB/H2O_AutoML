@@ -25,15 +25,26 @@ H2O는 Java 기반이라 GPU 기반으로 전환하려면 C 기반 커널을 재
 구현은 이미 존재하는 GPU 라이브러리(cuDF, cuML, XGBoost GPU)를 조합해서
 커널 재작성 없이 적용한다.
 
+**최종 목표:** 단순한 CPU→GPU 포팅이 아니다.
+RAPIDS LAB으로서 실무에서 활용하는 **메모리 최적화 역량**을 GPU AutoML에 적용하여,
+**메모리 최적화가 내재된 E2E GPU AutoML 프레임워크**를 설계하고 연구하는 것이 목적이다.
+
+| 질문 | 답 |
+|------|---|
+| 우리가 만드는 것은? | Memory-Aware GPU AutoML Framework (RAPIDS 기반) |
+| H2O에서 가져가는 것은? | Stacking/HPO의 설계 전략 (방법론) |
+| RAPIDS에서 활용하는 것은? | cuDF, cuML, Dask-CUDA, rmm (인프라) |
+| 우리의 고유 기여는? | GPU 메모리 최적화 관점의 AutoML 스케줄링 |
+
 ---
 
 ## 역할 분담
 
-| 담당 | 내용 |
-|------|------|
-| 권성민 | Stacked Ensemble 이론 + HPO 이론 + GPU 환경 과제 정리 |
-| Harrison | H2O 기법의 GPU 네이티브 적용 방향 분석 (이 문서들) |
-| 김선아 | (확인 필요) |
+| 번호 | 담당 | 내용 |
+|------|------|------|
+| 1 | 권석민 | Stacked Ensemble 방법론 및 원리 조사 |
+| 2 | 김선아 | Hyperparameter Tuning 방법론 및 원리 조사 |
+| 3 | 김해리슨 | RAPIDS 기반 GPU AutoML 적용 방향 분석 (이 문서들 + 노트북) |
 
 ---
 
@@ -45,7 +56,10 @@ H2O는 Java 기반이라 GPU 기반으로 전환하려면 C 기반 커널을 재
 | `01_stacked_ensemble_deep_dive.md` | Stacking 원리, OOF, Meta Learner, Two-type Ensemble | 2 |
 | `02_hyperparameter_tuning_deep_dive.md` | HPO 개념, Grid/Random Search, H2O 훈련 순서 | 3 |
 | `03_gpu_native_application.md` | GPU 적용 방향, cuDF/cuML 매핑, 병렬화, 메모리 관리 | 4 |
-| `260403-smKwon.pdf` | 팀원(권성민) 작성 자료 | 참고 |
+| `04_rapids_implementation_strategy.md` | RAPIDS 기반 구현 전략, Dask-CUDA 아키텍처, 로드맵 | 5 |
+| `05_memory_optimization_research.md` | GPU 메모리 최적화 연구 방향, 프로파일링, 스케줄링 | 6 |
+| `06_presentation_narrative.md` | 발표 스토리라인, 근거 검증 결과, 예상 질문 & 답변 | 7 |
+| `260403-smKwon.pdf` | 팀원(권석민) 작성 자료 | 참고 |
 
 ---
 
@@ -61,5 +75,5 @@ H2O는 Java 기반이라 GPU 기반으로 전환하려면 C 기반 커널을 재
 
 ## 핵심 한 줄 요약
 
-> **"H2O의 기법은 가져가되, 구현은 GPU 네이티브로 새로 짠다"**
-> — 이것이 가능한 이유는 RAPIDS(cuDF, cuML)가 H2O의 알고리즘 풀을 GPU로 이미 구현해놨기 때문이다.
+> **"H2O의 기법은 가져가되, 메모리 최적화를 내재한 GPU 네이티브로 새로 짠다"**
+> — RAPIDS(cuDF, cuML, Dask-CUDA, rmm)가 인프라를 제공하고, 우리는 메모리 최적화 관점의 설계를 더한다.

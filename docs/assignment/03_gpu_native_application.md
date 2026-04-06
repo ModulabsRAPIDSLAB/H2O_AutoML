@@ -73,7 +73,7 @@ XGBoost는 파라미터 하나만 변경:
 model = xgb.XGBClassifier(tree_method='hist')
 
 # GPU — 파라미터 하나만 변경
-model = xgb.XGBClassifier(tree_method='gpu_hist')
+model = xgb.XGBClassifier(tree_method='hist', device='cuda')
 ```
 
 이것이 "커널 재작성 없이 적용 가능"하다는 의미이다.
@@ -98,7 +98,8 @@ JVM 힙 메모리  →  JNI 호출 + 직렬화   →  C++ 메모리 복사   →
 이 오버헤드가 **매 모델 훈련마다** 발생한다.
 20개 모델 × 5-fold CV = 100번 훈련이면 → 오버헤드만 수 분.
 
-H2O의 XGBoost GPU 모드가 native XGBoost 대비 3~4배 느린 이유가 이것이다.
+H2O의 XGBoost GPU 모드가 native XGBoost 대비 **8~11배** 느린 이유가 이것이다.
+([szilard/GBM-perf 벤치마크](https://github.com/szilard/GBM-perf) 기준, V100 GPU)
 
 ### 2-2. cuDF가 이 문제를 해결하는 방법
 
@@ -189,25 +190,26 @@ H2O AutoML (GPU 모드 켜도):
 ```
 GPU 재설계:
   XGBoost GPU (native)           → GPU ✅ (브릿지 없음)
-  XGBoost gpu_hist (GBM 대체)    → GPU ✅
+  XGBoost hist+cuda (GBM 대체)   → GPU ✅
   cuML RandomForestClassifier    → GPU ✅
   cuML LogisticRegression        → GPU ✅
   PyTorch MLP (cuDNN)            → GPU ✅
-  cuML RF (split_algo='random')  → GPU ✅ (XRT 대체)
+  cuML RF (max_features 조정)    → GPU ⚠️ (완전 XRT 모방 불가)
 ```
 
 **파이프라인 전체가 GPU에서 돌아간다.**
 
 ### 3-3. 각 대체의 구체적 근거
 
-**H2O GBM → XGBoost `gpu_hist`**
+**H2O GBM → XGBoost `tree_method='hist', device='cuda'`**
 
 H2O GBM과 XGBoost는 둘 다 gradient boosting 알고리즘이다.
 H2O GBM은 Java로 자체 구현한 것이고, XGBoost는 C++ 네이티브 구현이다.
-`gpu_hist`는 GPU에서 히스토그램 기반 트리 분할을 수행한다.
+`tree_method='hist'` + `device='cuda'`는 GPU에서 히스토그램 기반 트리 분할을 수행한다.
+(참고: 이전의 `tree_method='gpu_hist'`는 deprecated)
 
 둘의 차이는 구현 디테일이지 알고리즘 원리는 동일하므로,
-XGBoost `gpu_hist`로 H2O GBM의 역할을 완전히 대체할 수 있다.
+XGBoost GPU 모드로 H2O GBM의 역할을 완전히 대체할 수 있다.
 
 **H2O XGBoost (Java wrapper) → XGBoost native GPU**
 
@@ -250,7 +252,9 @@ XRT(Extremely Randomized Trees)와 RF의 차이:
 - RF: 각 분할에서 **최적의** threshold를 찾음
 - XRT: 각 분할에서 **랜덤** threshold를 사용
 
-cuML RF에서 분할 방식을 랜덤으로 설정하면 XRT를 모방할 수 있다.
+cuML RF는 과거 `split_algo` 파라미터가 있었으나 현재 버전에서는 삭제되었으며,
+XRT 스타일의 랜덤 분할을 직접 지원하지 않는다.
+→ XRT는 cuML RF의 `max_features` 조정 + 깊은 트리로 유사한 다양성 효과를 노리거나, H2O의 알고리즘 풀에서 제외하는 것이 현실적이다.
 
 ---
 
