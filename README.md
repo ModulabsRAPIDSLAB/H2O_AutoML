@@ -21,7 +21,7 @@
 
 ## The Problem
 
-GPU AutoML은 CPU 대비 10~40배 빠른 모델 탐색이 가능하지만, **GPU VRAM(8~24GB)이라는 메모리 제약**이 실질적 병목이다.
+GPU AutoML은 CPU 대비 10 ~ 40배 빠른 모델 탐색이 가능하지만, **GPU VRAM(8~24GB)이라는 메모리 제약**이 실질적 병목이다.
 
 AutoML은 일반 ML과 다르다 — 모델 1개가 아니라 **수십 개 모델 x 5-fold CV = 수백 번의 훈련**이 동일 GPU에서 경쟁한다. 기존 GPU AutoML 프레임워크는 이 문제를 무시한다.
 
