@@ -136,7 +136,7 @@ output = dxgb.train(client, params, dtrain)
 
 | 사례 | 결과 | 출처 |
 |------|------|------|
-| TPOT + RAPIDS | GPU 1시간이 CPU 8시간보다 높은 정확도 (+1.3~2%) | [RAPIDS AI Blog: Faster AutoML with TPOT and RAPIDS](https://medium.com/rapids-ai/faster-automl-with-tpot-and-rapids-758455cd89e5) |
+| TPOT + RAPIDS | GPU 1시간이 CPU 8시간보다 높은 정확도 (+1.3 ~ 2%) | [RAPIDS AI Blog: Faster AutoML with TPOT and RAPIDS](https://medium.com/rapids-ai/faster-automl-with-tpot-and-rapids-758455cd89e5) |
 | AutoGluon + RAPIDS | 훈련 최대 40배, 추론 최대 10배 가속 | [NVIDIA Blog: Advancing AutoML 10x Faster](https://developer.nvidia.com/blog/advancing-the-state-of-the-art-in-automl-now-10x-faster-with-nvidia-gpus-and-rapids/) |
 | cuML StackingClassifier | 훈련 35배, 추론 350배+ 가속 (10만 행 기준) | [RAPIDS AI Blog: 100x Faster ML Ensembling](https://medium.com/rapids-ai/100x-faster-machine-learning-model-ensembling-with-rapids-cuml-and-scikit-learn-meta-estimators-d869788ee6b1) |
 
@@ -221,7 +221,7 @@ RAPIDS는 CUDA 버전, 드라이버 버전, Python 버전의 호환성 매트릭
   3. rmm logging → 메모리 사용량 측정 (프로파일링 가능성 확인)
 
 [마무리] 2분
-  로드맵 (Phase 0~4)
+  로드맵 (Phase 0 ~ 4)
   "이 설계가 논문으로 이어질 수 있는 이유"
 ```
 
@@ -230,7 +230,7 @@ RAPIDS는 CUDA 버전, 드라이버 버전, Python 버전의 호환성 매트릭
 ## 6. 예상 질문 & 답변
 
 **Q: H2O를 안 쓰고 새로 짜는 이유가 뭔가요?**
-A: H2O는 Java 기반이라 GPU 활용이 XGBoost 하나뿐이고, 그마저도 Java-C++ 브릿지 오버헤드로 native 대비 8~11배 느립니다 ([GBM-perf 벤치마크](https://github.com/szilard/GBM-perf)). RAPIDS는 전체 파이프라인을 GPU에서 돌릴 수 있어서 근본적으로 다릅니다.
+A: H2O는 Java 기반이라 GPU 활용이 XGBoost 하나뿐이고, 그마저도 Java-C++ 브릿지 오버헤드로 native 대비 8 ~ 11배 느립니다 ([GBM-perf 벤치마크](https://github.com/szilard/GBM-perf)). RAPIDS는 전체 파이프라인을 GPU에서 돌릴 수 있어서 근본적으로 다릅니다.
 
 **Q: 그냥 AutoGluon+RAPIDS 쓰면 되지 않나요?**
 A: AutoGluon+RAPIDS는 일부 모델만 cuML로 대체하는 수준이고, 메모리 관리를 하지 않습니다. 우리는 Dask-CUDA + rmm으로 메모리 인지 스케줄링까지 포함한 E2E 설계를 제안합니다. 이 부분이 기존 연구에 없는 우리의 기여입니다.

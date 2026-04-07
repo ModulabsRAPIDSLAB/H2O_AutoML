@@ -9,7 +9,7 @@
 
 ### 1.1 Problem Statement
 
-GPU AutoML은 CPU 대비 10~40배 빠른 모델 탐색이 가능하지만, **GPU VRAM(16~24GB)이라는 메모리 제약**이 실질적 병목이다. 기존 GPU AutoML 프레임워크(AutoGluon+RAPIDS, TPOT+RAPIDS)는 "속도"에만 집중하고 메모리 관리는 "OOM 나면 줄이세요" 수준에 머물러 있다.
+GPU AutoML은 CPU 대비 10 ~ 40배 빠른 모델 탐색이 가능하지만, **GPU VRAM(16 ~ 24GB)이라는 메모리 제약**이 실질적 병목이다. 기존 GPU AutoML 프레임워크(AutoGluon+RAPIDS, TPOT+RAPIDS)는 "속도"에만 집중하고 메모리 관리는 "OOM 나면 줄이세요" 수준에 머물러 있다.
 
 H2O AutoML은 10년간 검증된 Stacking/HPO 전략을 갖고 있지만 Java/CPU 기반이라 GPU 환경에서 직접 사용할 수 없다.
 
@@ -93,7 +93,7 @@ Scenario: 메모리 프로파일링
 | FR-012 | cuML LogisticRegression/LinearRegression 훈련 | P0 (Must) | FR-001 |
 | FR-013 | PyTorch MLP 기반 DNN 훈련 | P2 (Could) | FR-001 |
 | **Cross-Validation & OOF** | | | |
-| FR-020 | 각 base model에 대해 5-fold CV 수행 + OOF 예측 생성 | P0 (Must) | FR-010~012 |
+| FR-020 | 각 base model에 대해 5-fold CV 수행 + OOF 예측 생성 | P0 (Must) | FR-010 ~ 012 |
 | FR-021 | OOF 예측을 cuDF DataFrame으로 Level-One Data 구성 | P0 (Must) | FR-020 |
 | **Stacked Ensemble** | | | |
 | FR-030 | cuML GLM Meta Learner로 All Models Ensemble 생성 | P0 (Must) | FR-021 |
@@ -102,7 +102,7 @@ Scenario: 메모리 프로파일링
 | **Data Preprocessing** | | | |
 | FR-004 | 기본 전처리 (결측치 처리, 카테고리 인코딩) | P1 (Should) | FR-001 |
 | **Training Pipeline** | | | |
-| FR-040 | H2O 훈련 순서 전략 (Baseline → Diversity → Random Search) | P1 (Should) | FR-010~012 |
+| FR-040 | H2O 훈련 순서 전략 (Baseline → Diversity → Random Search) | P1 (Should) | FR-010 ~ 012 |
 | FR-041 | 시간 기반 제어 (`max_runtime_secs`) — 벤치마크 전제 조건 | P1 (Should) | - |
 | FR-042 | Random Search 하이퍼파라미터 탐색 | P1 (Should) | FR-040 |
 | FR-043 | XGBoost early stopping 지원 | P0 (Must) | FR-011 |
@@ -124,7 +124,7 @@ Scenario: 메모리 프로파일링
 | FR-070 | 모델별 성능 메트릭 (AUC/RMSE, 훈련 시간) Leaderboard | P0 (Must) | FR-020 |
 | FR-071 | 모델별 peak VRAM 사용량 Leaderboard에 포함 | P0 (Must) | FR-060 |
 | FR-072 | 메모리 프로파일링 리포트 출력 (단계별 peak VRAM) | P1 (Should) | FR-060 |
-| FR-073 | GPUTreeSHAP 기반 모델 설명 기능 | P2 (Could) | FR-010~012 |
+| FR-073 | GPUTreeSHAP 기반 모델 설명 기능 | P2 (Could) | FR-010 ~ 012 |
 | FR-074 | predict() API: 기본 Leaderboard 1위 모델 예측, model_id로 특정 모델 지정 가능 | P0 (Must) | FR-030 |
 
 ---
@@ -133,7 +133,7 @@ Scenario: 메모리 프로파일링
 
 ### 4.0 Scale Grade
 
-**Startup (소규모 연구)** — RAPIDS LAB 내부 연구 프로젝트, 2~3명 팀, 논문 발표 목표.
+**Startup (소규모 연구)** — RAPIDS LAB 내부 연구 프로젝트, 2 ~ 3명 팀, 논문 발표 목표.
 
 ### 4.1 Performance
 
@@ -147,7 +147,7 @@ Scenario: 메모리 프로파일링
 
 | 항목 | 요구사항 |
 |------|----------|
-| Python | 3.9~3.11 |
+| Python | 3.9 ~ 3.11 |
 | CUDA | 11.8+ |
 | GPU | NVIDIA (Compute Capability 7.0+, VRAM 16GB+) |
 | RAPIDS | 24.02+ (cuDF, cuML, Dask-CUDA, rmm) |
@@ -256,7 +256,7 @@ Scenario: 메모리 프로파일링
 
 ```python
 # 사용자 인터페이스 (sklearn 호환)
-from gpu_automl import GPUAutoML
+from paged_automl import GPUAutoML
 
 automl = GPUAutoML(
     max_runtime_secs=300,       # 시간 예산
@@ -276,7 +276,7 @@ preds = automl.predict(X_test)         # 앙상블 예측
 ### 5.3 Key Module Structure
 
 ```
-gpu_automl/
+paged_automl/
 ├── __init__.py
 ├── automl.py              # GPUAutoML 메인 클래스
 ├── orchestrator.py        # 훈련 순서 / 시간 제어 / 스케줄링
@@ -355,7 +355,7 @@ gpu_automl/
 - [ ] 시간 기반 제어 (`max_runtime_secs`)
 - [ ] rmm 풀 전략 비교 실험 (No pool / Fixed / Managed / Adaptive)
 - [ ] Mixed Precision Level-One Data 실험
-- [ ] 다양한 데이터셋 벤치마크 (Kaggle 데이터셋 3~5개)
+- [ ] 다양한 데이터셋 벤치마크 (Kaggle 데이터셋 3 ~ 5개)
 
 **Deliverable**: 논문용 실험 데이터 + 최종 프레임워크
 
@@ -407,4 +407,4 @@ gpu_automl/
 - H2O AutoML 논문: "H2O AutoML: Scalable Automatic Machine Learning" (LeDell & Poirier, 2020)
 - RAPIDS 공식 문서: https://docs.rapids.ai/
 - Bergstra & Bengio (2012): "Random Search for Hyper-Parameter Optimization"
-- 팀 분석 문서: `docs/assignment/01~05`
+- 팀 분석 문서: `docs/assignment/01 ~ 05`

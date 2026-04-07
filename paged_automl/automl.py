@@ -1,7 +1,7 @@
 """GPUAutoML — Main entry point (sklearn-compatible API).
 
 Usage:
-    from gpu_automl import GPUAutoML
+    from paged_automl import GPUAutoML
 
     automl = GPUAutoML(max_runtime_secs=300, memory_aware=True)
     automl.fit(X_train, y_train)
@@ -20,13 +20,14 @@ import cudf
 import numpy as np
 import pandas as pd
 
-from gpu_automl.data.loader import load_data
-from gpu_automl.data.preprocessor import Preprocessor
-from gpu_automl.memory.pool import PoolStrategy, RMMPoolManager
-from gpu_automl.memory.profiler import MemoryProfiler
-from gpu_automl.orchestrator import Orchestrator
-from gpu_automl.reporting.leaderboard import Leaderboard
-from gpu_automl.reporting.memory_report import MemoryReport
+from paged_automl.data.loader import load_data
+from paged_automl.data.preprocessor import Preprocessor
+from paged_automl.memory.paged_manager import PagedMemoryManager
+from paged_automl.memory.pool import PoolStrategy, RMMPoolManager
+from paged_automl.memory.profiler import MemoryProfiler
+from paged_automl.orchestrator import Orchestrator
+from paged_automl.reporting.leaderboard import Leaderboard
+from paged_automl.reporting.memory_report import MemoryReport
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,9 @@ class GPUAutoML:
         "classification", "regression", or None (auto-detect).
     use_dask : bool
         Enable Dask-CUDA multi-GPU cluster. Auto-detected based on GPU count.
+    paged_memory : bool
+        Enable vLLM-style paged memory management. Blocks are allocated/freed
+        at task boundaries for continuous GPU utilization.
     """
 
     def __init__(
@@ -76,6 +80,7 @@ class GPUAutoML:
         preprocess: bool = True,
         task: Optional[str] = None,
         use_dask: bool = False,
+        paged_memory: bool = False,
     ):
         self.max_runtime_secs = max_runtime_secs
         self.max_models = max_models
@@ -89,9 +94,11 @@ class GPUAutoML:
         self.preprocess = preprocess
         self._task = task
         self.use_dask = use_dask
+        self.paged_memory = paged_memory
 
         self._profiler: Optional[MemoryProfiler] = None
         self._pool_manager: Optional[RMMPoolManager] = None
+        self._paged_manager: Optional[PagedMemoryManager] = None
         self._orchestrator: Optional[Orchestrator] = None
         self._preprocessor: Optional[Preprocessor] = None
         self._leaderboard: Optional[Leaderboard] = None
@@ -156,7 +163,9 @@ class GPUAutoML:
         return self
 
     def shutdown(self) -> None:
-        """Clean up GPU resources (Dask cluster, profiler, rmm pool)."""
+        """Clean up GPU resources (Dask cluster, paged manager, profiler, rmm pool)."""
+        if self._paged_manager is not None:
+            self._paged_manager.shutdown()
         if self._dask_client is not None:
             self._dask_client.close()
             self._dask_client = None
@@ -284,6 +293,12 @@ class GPUAutoML:
         if strategy != PoolStrategy.NONE:
             self._pool_manager = RMMPoolManager(strategy=strategy)
             self._pool_manager.initialize()
+
+        # vLLM-style Paged Memory Manager
+        if self.paged_memory:
+            self._paged_manager = PagedMemoryManager()
+            self._paged_manager.initialize()
+            logger.info(f"Paged Memory: {self._paged_manager}")
 
         # Dask-CUDA cluster for multi-GPU or parallel fold/model execution
         if self.use_dask:

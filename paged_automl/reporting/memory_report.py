@@ -11,8 +11,8 @@ from typing import Optional
 
 import pandas as pd
 
-from gpu_automl.memory.profiler import MemoryProfiler, StageProfile
-from gpu_automl.reporting.leaderboard import Leaderboard
+from paged_automl.memory.profiler import MemoryProfiler, StageProfile
+from paged_automl.reporting.leaderboard import Leaderboard
 
 
 class MemoryReport:

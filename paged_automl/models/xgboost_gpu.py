@@ -8,7 +8,7 @@ import cudf
 import numpy as np
 import xgboost as xgb
 
-from gpu_automl.models.base import BaseModel, ModelConfig
+from paged_automl.models.base import BaseModel, ModelConfig
 
 
 class XGBoostGPU(BaseModel):

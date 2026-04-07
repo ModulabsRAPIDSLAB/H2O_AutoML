@@ -98,7 +98,7 @@ JVM 힙 메모리  →  JNI 호출 + 직렬화   →  C++ 메모리 복사   →
 이 오버헤드가 **매 모델 훈련마다** 발생한다.
 20개 모델 × 5-fold CV = 100번 훈련이면 → 오버헤드만 수 분.
 
-H2O의 XGBoost GPU 모드가 native XGBoost 대비 **8~11배** 느린 이유가 이것이다.
+H2O의 XGBoost GPU 모드가 native XGBoost 대비 **8 ~ 11배** 느린 이유가 이것이다.
 ([szilard/GBM-perf 벤치마크](https://github.com/szilard/GBM-perf) 기준, V100 GPU)
 
 ### 2-2. cuDF가 이 문제를 해결하는 방법
@@ -335,7 +335,7 @@ GPU 2: [Fold3]──────
 **이론적 속도 향상:** fold 수 / GPU 수
 
 실제로는 데이터 분배, 결과 수집, 동기화 오버헤드가 있어서
-이론치의 70~85% 정도 달성이 현실적이다.
+이론치의 70 ~ 85% 정도 달성이 현실적이다.
 
 ### 4-5. Resource-Aware Scheduling
 
@@ -470,7 +470,7 @@ Level-One Data의 크기: N (샘플 수) × L (모델 수)
 문제는 Level-One Data + 원본 데이터 + 모델 파라미터가 **동시에** VRAM에 있어야 한다는 것.
 
 해결 전략 (우선순위순):
-1. **Best of Family 사용** → L을 5~6개로 제한 (가장 실용적)
+1. **Best of Family 사용** → L을 5 ~ 6개로 제한 (가장 실용적)
 2. **float16 사용** → 메모리 절반으로 감소
 3. **배치 처리** → OOF를 모델 그룹별로 나눠 생성
 4. **Dask-cuDF 분산** → 멀티 GPU에 데이터 분산
@@ -516,7 +516,7 @@ XGBoost: `deterministic_histogram=True` 설정으로 재현 가능
 cuML: `random_state` 파라미터로 시드 고정
 PyTorch: `torch.use_deterministic_algorithms(True)` 설정
 
-**트레이드오프:** Deterministic 모드는 GPU 활용 효율이 떨어져서 10~30% 느려질 수 있다.
+**트레이드오프:** Deterministic 모드는 GPU 활용 효율이 떨어져서 10 ~ 30% 느려질 수 있다.
 
 연구/실험 시에는 deterministic 모드 사용, 프로덕션에서는 성능 우선.
 
@@ -570,10 +570,10 @@ XGBoost만 GPU로 빠르게 돌려도 RF, GLM, DNN이 CPU에서 병목이 되면
 **Q: "GPU 메모리가 부족하면 어떻게 하나요?"**
 
 A: 세 가지 전략이 있다.
-1. Best of Family Ensemble으로 모델 수를 5~6개로 제한 (가장 실용적)
+1. Best of Family Ensemble으로 모델 수를 5 ~ 6개로 제한 (가장 실용적)
 2. Dask-cuDF로 멀티 GPU에 데이터 분산
 3. 배치 처리로 한 번에 모든 데이터를 올리지 않음
-실제로 대부분의 tabular 데이터는 16~24GB GPU에 충분히 들어간다.
+실제로 대부분의 tabular 데이터는 16 ~ 24GB GPU에 충분히 들어간다.
 
 **Q: "실제 성능 향상이 얼마나 되나요?"**
 
@@ -581,4 +581,4 @@ A: 벤치마크 사례를 보면,
 - TPOT + RAPIDS: CPU 8시간 대비 GPU 1시간에 더 높은 정확도
 - AutoGluon + RAPIDS: 훈련 40배, 추론 10배 가속
 - cuML Stacking: 훈련 35배, 추론 350배 가속
-전체 AutoML 파이프라인으로 보면 10~40배 가속이 현실적 기대치이다.
+전체 AutoML 파이프라인으로 보면 10 ~ 40배 가속이 현실적 기대치이다.

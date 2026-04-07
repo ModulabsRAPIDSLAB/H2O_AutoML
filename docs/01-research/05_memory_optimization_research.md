@@ -12,12 +12,12 @@
 
 ```
 CPU AutoML 환경:
-  시스템 RAM: 64~256GB (보통 충분)
+  시스템 RAM: 64 ~ 256GB (보통 충분)
   → 메모리가 실질적 제약이 되는 경우가 드물다
   → H2O AutoML은 이 환경을 전제로 설계되었다
 
 GPU AutoML 환경:
-  GPU VRAM: 16~24GB (항상 부족)
+  GPU VRAM: 16 ~ 24GB (항상 부족)
   → AutoML이 하는 일을 이 안에서 돌려야 한다
 ```
 
@@ -31,9 +31,9 @@ GPU AutoML 환경:
    1000만 행 × 50 feature × float32 = ~2GB
 
 2. 현재 훈련 중인 모델의 내부 데이터
-   XGBoost: 히스토그램 버퍼, 트리 구조 → ~2~6GB (데이터 크기에 비례)
-   cuML RF: 트리 노드 배열 → ~3~8GB
-   cuML GLM: 행렬 연산 임시 버퍼 → ~0.5~2GB
+   XGBoost: 히스토그램 버퍼, 트리 구조 → ~2 ~ 6GB (데이터 크기에 비례)
+   cuML RF: 트리 노드 배열 → ~3 ~ 8GB
+   cuML GLM: 행렬 연산 임시 버퍼 → ~0.5 ~ 2GB
 
 3. OOF 예측값 (Level-One Data 생성 중)
    진행 중인 모델들의 OOF → 모델 수에 비례하여 증가
@@ -266,8 +266,8 @@ VRAM이 부족한 환경에서 모델 수를 늘릴 수 있는 전략이다.
 ```
 VRAM 여유 상태 확인:
   충분 (>8GB 가용) → All Models Ensemble (모델 전체 포함)
-  보통 (4~8GB)     → Top-K Models (상위 K개만 포함)
-  부족 (<4GB)      → Best of Family (알고리즘별 1개씩, 5~6개)
+  보통 (4 ~ 8GB)     → Top-K Models (상위 K개만 포함)
+  부족 (<4GB)      → Best of Family (알고리즘별 1개씩, 5 ~ 6개)
 
 H2O의 Two-type Ensemble이 사실은 메모리 관점의 전략이기도 하다:
   All Models     = 메모리 여유 있을 때 최고 성능

@@ -25,7 +25,7 @@
 - cuML RF max_depth: GPU limit 16으로 cap + warning 로그
 
 ### Phase 1: MVP — E2E GPU Stacking (단일 GPU, 순차, Dask 없음)
-- [x] 프로젝트 구조 생성 (`gpu_automl/` 패키지)
+- [x] 프로젝트 구조 생성 (`paged_automl/` 패키지)
 - [x] cuDF 데이터 로드 + 기본 전처리 (`data/loader.py`, `data/preprocessor.py`)
 - [x] BaseModel 인터페이스 정의 (`models/base.py`)
 - [x] cuML RF wrapper (`models/cuml_rf.py`)

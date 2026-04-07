@@ -75,7 +75,7 @@ def test_full_pipeline(
     memory_aware: bool = True,
 ):
     """Run the full GPU AutoML pipeline as an integration test."""
-    from gpu_automl import GPUAutoML
+    from paged_automl import GPUAutoML
 
     print("=" * 60)
     print("GPU AutoML E2E Integration Test")
@@ -182,7 +182,7 @@ def test_memory_naive_vs_aware(
     max_models: int = 5,
 ):
     """Compare Memory-Naive vs Memory-Aware scheduling."""
-    from gpu_automl import GPUAutoML
+    from paged_automl import GPUAutoML
 
     print("\n" + "=" * 60)
     print("Memory-Naive vs Memory-Aware Comparison")

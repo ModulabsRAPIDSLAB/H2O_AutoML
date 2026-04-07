@@ -61,7 +61,7 @@ def run_e2e_test(n_rows=50000, n_features=20, max_models=10, compare=False):
     """Run E2E test and collect results."""
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from tests.test_e2e_gpu import generate_synthetic_data
-    from gpu_automl import GPUAutoML
+    from paged_automl import GPUAutoML
 
     print(f"Running E2E test ({n_rows} rows, {n_features} features, {max_models} models)...")
 

@@ -14,8 +14,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Optional
 
-from gpu_automl.memory.estimator import VRAMEstimator
-from gpu_automl.memory.profiler import MemoryProfiler
+from paged_automl.memory.estimator import VRAMEstimator
+from paged_automl.memory.profiler import MemoryProfiler
 
 logger = logging.getLogger(__name__)
 
@@ -245,6 +245,128 @@ class MemoryAwareScheduler:
                     logger.error(f"Task {task.task_id} failed: {e}")
 
                 results.append(task)
+
+        return results
+
+    @property
+    def completed_tasks(self) -> list[TrainTask]:
+        return list(self._completed)
+
+    @property
+    def failed_tasks(self) -> list[TrainTask]:
+        return list(self._failed)
+
+
+class ContinuousScheduler:
+    """vLLM Continuous Batching-style scheduler for GPU AutoML.
+
+    vLLM이 매 iteration마다 완료된 요청을 즉시 제거하고 새 요청을 투입하듯이,
+    이 스케줄러는 fold/모델 완료 즉시 블록을 회수하고 다음 task를 투입한다.
+
+    vLLM 대응:
+      vLLM Continuous Batching → ContinuousScheduler
+      vLLM iteration-level scheduling → task 완료 시 즉시 재스케줄링
+      vLLM preemption → LRU eviction via PagedMemoryManager
+
+    핵심 차이 (커스텀 CUDA 커널 불필요):
+      vLLM은 Attention 커널 안에서 Page Table을 참조하므로 커스텀 커널이 필수.
+      AutoML은 task 경계(모델/fold 시작/끝)에서만 블록을 관리하므로
+      rmm + cupy만으로 구현 가능 (Coarse-grained Paging).
+
+    Parameters
+    ----------
+    paged_manager : PagedMemoryManager
+        블록 풀 관리자.
+    estimator : VRAMEstimator
+        VRAM 사용량 추정기.
+    """
+
+    def __init__(
+        self,
+        paged_manager: Any,  # PagedMemoryManager
+        estimator: Any,  # VRAMEstimator
+    ):
+        self.paged_manager = paged_manager
+        self.estimator = estimator
+        self._completed: list[TrainTask] = []
+        self._failed: list[TrainTask] = []
+
+    def run(
+        self,
+        tasks: list[TrainTask],
+        execute_fn: Callable[[TrainTask], Any],
+    ) -> list[TrainTask]:
+        """Task들을 연속 실행 — 완료 즉시 블록 회수 → 다음 task 투입.
+
+        vLLM의 continuous batching loop에 대응:
+          while waiting or running:
+            1) 완료된 task → 블록 회수 (free)
+            2) 대기열에서 블록 확보 가능한 task → 투입
+        """
+        waiting = list(tasks)
+        waiting.sort(key=lambda t: t.priority)
+        results: list[TrainTask] = []
+
+        for task in waiting:
+            # 블록 수 예측
+            if task.estimated_vram_gb == 0:
+                est = self.estimator.estimate(
+                    task.algorithm, task.n_rows, task.n_features, task.params
+                )
+                task.estimated_vram_gb = est.estimated_gb
+
+            n_blocks = self.paged_manager.estimate_blocks(task.estimated_vram_gb)
+
+            # 블록 할당 시도
+            alloc = self.paged_manager.allocate(task.task_id, n_blocks)
+
+            if not alloc.success:
+                logger.warning(
+                    f"Task {task.task_id}: cannot allocate {n_blocks} blocks. Skipping."
+                )
+                task.status = "failed"
+                self._failed.append(task)
+                results.append(task)
+                continue
+
+            if alloc.evicted_tasks:
+                logger.info(
+                    f"Evicted {len(alloc.evicted_tasks)} task(s) to host "
+                    f"for {task.task_id}: {alloc.evicted_tasks}"
+                )
+
+            # Task 실행
+            task.status = "running"
+            logger.info(
+                f"Executing {task.task_id} ({task.algorithm}, "
+                f"{n_blocks} blocks, "
+                f"GPU util: {self.paged_manager.gpu_utilization:.0%})"
+            )
+
+            try:
+                result = execute_fn(task)
+                task.status = "completed"
+                task.result = result
+                self._completed.append(task)
+
+                if task.actual_vram_gb > 0:
+                    self.estimator.record_actual(
+                        task.algorithm, task.n_rows, task.n_features,
+                        task.params, task.actual_vram_gb,
+                    )
+            except Exception as e:
+                task.status = "failed"
+                self._failed.append(task)
+                logger.error(f"Task {task.task_id} failed: {e}")
+            finally:
+                # 즉시 블록 회수 — vLLM의 "완료 즉시 free"
+                freed = self.paged_manager.free(task.task_id)
+                logger.debug(
+                    f"Freed {freed} blocks from {task.task_id}. "
+                    f"GPU util: {self.paged_manager.gpu_utilization:.0%}"
+                )
+
+            results.append(task)
 
         return results
 

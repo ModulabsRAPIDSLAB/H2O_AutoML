@@ -1,7 +1,7 @@
 [project]
-name = "h2o-automl"
+name = "paged-automl"
 version = "0.1.0"
-description = "RAPIDS LAB 세미나: H2O AutoML 데모 및 Memory-Aware GPU AutoML 프레임워크"
+description = "PagedAutoML: vLLM-inspired Paged Memory Management for GPU AutoML"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [

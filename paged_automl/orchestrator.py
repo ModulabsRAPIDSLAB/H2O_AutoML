@@ -18,18 +18,18 @@ from typing import Any, Optional
 import cudf
 import numpy as np
 
-from gpu_automl.data.cv import CrossValidator
-from gpu_automl.ensemble.stacking import StackedEnsemble
-from gpu_automl.hpo.presets import get_presets
-from gpu_automl.hpo.random_search import RandomSearch
-from gpu_automl.memory.estimator import VRAMEstimator
-from gpu_automl.memory.profiler import MemoryProfiler
-from gpu_automl.models.base import BaseModel, ModelConfig
-from gpu_automl.models.cuml_glm import CuMLGLM
-from gpu_automl.models.cuml_rf import CuMLRandomForest
-from gpu_automl.models.xgboost_gpu import XGBoostGPU
-from gpu_automl.reporting.leaderboard import Leaderboard, LeaderboardEntry
-from gpu_automl.scheduler import (
+from paged_automl.data.cv import CrossValidator
+from paged_automl.ensemble.stacking import StackedEnsemble
+from paged_automl.hpo.presets import get_presets
+from paged_automl.hpo.random_search import RandomSearch
+from paged_automl.memory.estimator import VRAMEstimator
+from paged_automl.memory.profiler import MemoryProfiler
+from paged_automl.models.base import BaseModel, ModelConfig
+from paged_automl.models.cuml_glm import CuMLGLM
+from paged_automl.models.cuml_rf import CuMLRandomForest
+from paged_automl.models.xgboost_gpu import XGBoostGPU
+from paged_automl.reporting.leaderboard import Leaderboard, LeaderboardEntry
+from paged_automl.scheduler import (
     MemoryAwareScheduler,
     SchedulingMode,
     TrainTask,

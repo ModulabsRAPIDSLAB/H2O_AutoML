@@ -14,7 +14,7 @@ from typing import Any, Optional
 import cudf
 import numpy as np
 
-from gpu_automl.models.base import BaseModel, ModelConfig
+from paged_automl.models.base import BaseModel, ModelConfig
 
 logger = logging.getLogger(__name__)
 

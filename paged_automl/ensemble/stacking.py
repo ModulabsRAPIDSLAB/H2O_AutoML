@@ -14,7 +14,7 @@ from typing import Any, Optional
 import cudf
 import numpy as np
 
-from gpu_automl.ensemble.meta_learner import MetaLearner, NNStrategy
+from paged_automl.ensemble.meta_learner import MetaLearner, NNStrategy
 
 logger = logging.getLogger(__name__)
 
