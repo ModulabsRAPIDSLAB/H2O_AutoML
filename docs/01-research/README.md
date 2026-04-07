@@ -19,6 +19,16 @@ Stacked Ensemble, HPO 순서, Non-negative Meta Learner — 이 전략들은 실
 
 **참고 자료**: [팀원 분석 자료 (PDF)](260403-smKwon.pdf)
 
+## 이 연구의 결과
+
+이 분석에서 도출한 전략이 실제 데이터(Kaggle 129만 행)에서 검증되었습니다:
+
+- Stacked Ensemble → GPU에서 AUC 0.9973 달성 (실패 모델 자동 제외)
+- HPO Diversity 전략 → Baseline 대비 +0.27% AUC 향상
+- Memory-Aware Scheduling → 8GB GPU에서 OOM 0건
+
+상세 결과: [Phase 3: Results → 실험 해석](../03-results/benchmark_interpretation.md)
+
 ## Next Phase
 
 이 분석을 바탕으로 GPU 재설계 전략을 수립합니다 → [Phase 2: Design](../02-design/)

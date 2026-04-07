@@ -75,6 +75,22 @@ Orchestrator가 매 모델 훈련 전에 `VRAMEstimator.estimate()` → `profile
 
 ---
 
+## 실증 결과: 설계가 실제로 작동하는가?
+
+Kaggle Credit Card Fraud (1,296,675 rows)로 검증한 결과, 위 설계가 모두 유효하게 동작합니다.
+
+| 설계 결정 | 실증 결과 |
+|----------|----------|
+| H2O 3-Phase 전략 | Diversity Phase에서 Baseline 대비 AUC +0.27% 향상 (0.9953 → 0.9980) |
+| Non-negative Meta Learner (clipping) | 실패 모델(GLM, AUC 0.52) 가중치를 0으로 자동 제거 |
+| Two-Type Ensemble | All Models(0.9961) + Best of Family(0.9973) 모두 생성 성공 |
+| Memory-Aware Scheduling | 10개 모델 모두 VRAM 체크 통과, OOM 0건 |
+| cuML RF max_depth 16 cap | RF 모델 4개 모두 정상 훈련 (depth 8 ~ 16) |
+
+상세 해석: [docs/03-results/benchmark_interpretation.md](../03-results/benchmark_interpretation.md)
+
+---
+
 ## vLLM-inspired Paged Memory (Coarse-grained Paging)
 
 ### 왜 vLLM인가?
