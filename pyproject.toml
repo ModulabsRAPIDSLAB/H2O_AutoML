@@ -1,14 +1,32 @@
 [project]
 name = "h2o-automl"
 version = "0.1.0"
-description = "RAPIDS LAB 세미나: H2O AutoML 데모 및 발표 자료"
+description = "RAPIDS LAB 세미나: H2O AutoML 데모 및 Memory-Aware GPU AutoML 프레임워크"
 readme = "README.md"
-requires-python = ">=3.9,<3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
-    "h2o==3.46.0.10",
+    # H2O AutoML (CPU baseline)
+    "h2o>=3.46",
+    # Notebook & Visualization
     "jupyter>=1.0",
     "pandas>=1.3",
     "matplotlib>=3.5",
     "seaborn>=0.12",
-    "tqdm>=4.67.3",  # notebook progress bars
+    "tqdm>=4.67",
+    # GPU AutoML Framework — RAPIDS (CUDA 13)
+    "cudf-cu13==26.2.*",
+    "cuml-cu13==26.2.*",
+    "dask-cudf-cu13==26.2.*",
+    "rmm-cu13==26.2.*",
+    "cupy-cuda13x>=13.0",
+    "dask-cuda>=24.2",
+    # GPU ML
+    "xgboost>=2.0",
+    "pynvml>=11.0",
+    # Utilities
+    "scikit-learn>=1.2",
+    "scipy>=1.10",
 ]
+
+[tool.uv]
+extra-index-url = ["https://pypi.nvidia.com"]
