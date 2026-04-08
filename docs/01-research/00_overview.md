@@ -44,7 +44,7 @@ RAPIDS LAB으로서 실무에서 활용하는 **메모리 최적화 역량**을 
 |------|------|------|
 | 1 | 권석민 | Stacked Ensemble 방법론 및 원리 조사 |
 | 2 | 김선아 | Hyperparameter Tuning 방법론 및 원리 조사 |
-| 3 | 김해리슨 | RAPIDS 기반 GPU AutoML 적용 방향 분석 (이 문서들 + 노트북) |
+| 3 | 김형섭 | RAPIDS 기반 GPU AutoML 적용 방향 분석 (이 문서들 + 노트북) |
 
 ---
 
