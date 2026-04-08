@@ -4,15 +4,13 @@
 
 ## Status
 
-| Metric | Value |
-|--------|-------|
-| 코드 구현 | 27개 모듈, `paged_automl/` 패키지 |
-| 태스크 진행 | 30/33 완료 |
-| E2E 테스트 | RTX 4060 8GB, Credit Card Fraud 1.29M rows |
-| Best AUC | **0.9980** (XGBoost Diversity) |
-| 앙상블 | Best of Family 0.9973, All Models 0.9961 |
-| OOM 발생 | **0건** (Memory-Aware Scheduling) |
-| 총 소요 | 181초에 12개 모델 완료 |
+| Metric | Credit Card (1.29M) | Higgs (5M) |
+|--------|:-------------------:|:----------:|
+| Best AUC | 0.9980 (XGBoost) | 0.8125 (XGBoost) |
+| 모델 수 | 10 + 2 ensemble | 3 + 2 ensemble |
+| 총 소요 | 181초 | 153초 |
+| OOM | 0건 | 0건 (skip으로 방지) |
+| Memory-Aware skip | 0건 | rmm ON 시 전부 skip |
 
 ## Documents
 

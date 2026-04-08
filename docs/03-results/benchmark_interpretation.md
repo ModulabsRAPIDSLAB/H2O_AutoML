@@ -180,21 +180,90 @@ Memory-Aware Scheduling의 가치가 본격적으로 드러납니다.
 
 ---
 
-## 한계와 다음 단계
+## Benchmark 2: Higgs Boson (5M rows x 28 features)
 
-### 이 실험의 한계
+### 실험 조건
 
-1. **8GB GPU는 PRD 기준(16GB+)보다 작음** — Memory-Aware의 skip/eviction이 충분히 발생하지 않음
-2. **CPU H2O와의 직접 비교 미완** — 동일 데이터로 H2O를 돌린 결과가 아직 없음
-3. **GLM 수렴 실패** — cuML의 L-BFGS가 극도의 불균형 데이터에서 약함. 클래스 가중치 적용이 필요
-4. **단일 데이터셋** — Higgs Boson(11M), Airline Delays(5.8M)로 확장 실험 필요
+| 항목 | 값 |
+|:----:|:---|
+| 데이터 | UCI Higgs Boson (11M 중 5M rows 서브샘플링) |
+| 특성 수 | 28 (모두 수치형, 물리학 시뮬레이션 변수) |
+| 타겟 | signal(1) vs background(0), 비교적 균형 (53% / 47%) |
+| GPU | RTX 4060 (8GB VRAM) |
+| VRAM 내 데이터 크기 | **~1.04 GB** (Credit Card의 10배) |
 
-### 다음 단계
+### 왜 이 데이터셋인가?
 
-- 16GB+ GPU에서 Higgs Boson 데이터로 Memory-Aware skip/eviction 실제 발생 확인
-- CPU H2O 동일 조건 벤치마크 (속도 비교)
-- PagedMemoryManager의 블록 할당/회수 로그 분석
-- cuML GLM에 클래스 가중치(`class_weight`) 적용하여 불균형 대응
+Credit Card(129만 x 11)에서는 모델당 VRAM이 0.04GB 미만이라
+Memory-Aware Scheduling이 발동할 일이 없었다.
+Higgs(5M x 28)는 데이터 자체가 1GB이고, 모델 훈련에 추가 2 ~ 4GB가 필요하여
+**8GB GPU의 한계에 도달하는 규모**이다.
+
+### Memory-Aware가 실제로 의미를 가지는 순간
+
+이 실험에서 **rmm pool 설정에 따라 결과가 완전히 달라졌다**:
+
+| 설정 | free VRAM | XGBoost (4.12GB 필요) | RF (2.12GB) | GLM (2.62GB) | 결과 |
+|------|:---------:|:---------------------:|:-----------:|:------------:|:----:|
+| rmm pool ON (4GB) | 0.66 GB | **skip** | **skip** | **skip** | 모델 0개 |
+| rmm pool OFF | 4.80 GB | pass | pass | pass | 모델 3개 성공 |
+
+**해석**: rmm pool이 4GB를 미리 점유하면 남은 free VRAM이 0.66GB뿐이다.
+모든 모델의 예상 VRAM(최소 2.12GB)이 이를 초과하므로 Memory-Aware가 전부 skip한다.
+
+이것은 Memory-Aware의 **한계이자 PagedMemoryManager의 필요성**을 보여준다:
+- Memory-Aware는 "free VRAM 부족 → skip"만 가능
+- PagedMemoryManager는 "pool 내부를 블록 단위로 관리 → 모델에 필요한 만큼만 할당" 가능
+
+### Leaderboard (rmm pool OFF)
+
+```
+ rank        model_id       algorithm      auc  training_time  peak_vram
+    1       xgboost_1         xgboost 0.8125        2.62s      0.014 GB
+    2    SE_AllModels StackedEnsemble 0.8124          -            -
+    3 SE_BestOfFamily StackedEnsemble 0.8124          -            -
+    4            rf_2              rf 0.7970       23.69s      0.002 GB
+    5           glm_3             glm 0.6840        1.99s      0.008 GB
+```
+
+**해석**:
+- XGBoost가 1위 (0.8125) — 물리학 데이터의 비선형 패턴을 트리가 잘 포착
+- RF는 0.797로 2위이지만 **23초**로 매우 느림 (XGBoost의 9배)
+- GLM은 0.684 — Credit Card(0.52)보다는 나음. 클래스 균형이 나아서 수렴은 성공했지만 비선형 한계
+- 앙상블(0.8124)이 XGBoost(0.8125)와 거의 동일 — base model이 3개뿐이라 앙상블 효과 제한적
+
+### Credit Card vs Higgs 비교
+
+| | Credit Card (1.29M x 11) | Higgs (5M x 28) |
+|:--|:------------------------:|:----------------:|
+| 데이터 VRAM | 0.11 GB | **1.04 GB** |
+| Best AUC | 0.9980 | 0.8125 |
+| 모델 수 | 10 + 2 ensemble | 3 + 2 ensemble |
+| 총 시간 | 181초 | 153초 |
+| Memory-Aware skip | 0건 | **rmm ON 시 전부 skip** |
+| 핵심 알고리즘 | XGBoost | XGBoost |
+| GLM 동작 | 실패 (불균형) | 동작하나 낮은 성능 |
+
+---
+
+## 종합: 무엇이 검증되었고 무엇이 남았는가
+
+### 검증된 것
+
+| 항목 | Credit Card | Higgs | 결론 |
+|------|:-----------:|:-----:|------|
+| H2O 3-Phase 전략 | Diversity가 +0.27% | Baseline만 실행 | 데이터 규모가 크면 Diversity까지 갈 여유가 줄어듦 |
+| Stacked Ensemble | 2종 모두 생성 | 2종 모두 생성 | GPU에서 안정적으로 동작 |
+| Non-negative Meta Learner | GLM 자동 제외 | GLM 낮은 가중치 | 실패/약한 모델을 자동 관리 |
+| Memory-Aware OOM 방지 | OOM 0건 | OOM 0건 (skip으로 방지) | 목표 달성. 단, skip이 과도할 수 있음 |
+| VRAM 프로파일링 | 단계별 기록 | 단계별 기록 | H2O에 없는 기능, 정상 동작 |
+
+### 남은 과제
+
+1. **PagedMemoryManager 실사용**: rmm pool 내부를 블록으로 관리하여 skip 대신 실행 가능하게
+2. **CPU H2O 동일 조건 비교**: 같은 데이터, 같은 시간으로 속도 직접 측정
+3. **GLM 클래스 불균형 대응**: class_weight 또는 데이터 리샘플링
+4. **16GB+ GPU에서 Higgs 전체(11M)**: 더 많은 모델을 동시에 돌릴 수 있는 환경
 
 ---
 

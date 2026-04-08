@@ -1,0 +1,107 @@
+{
+  "leaderboard": [
+    {
+      "rank": 1,
+      "model_id": "xgboost_1",
+      "algorithm": "xgboost",
+      "auc": 0.812478,
+      "training_time_secs": 2.62,
+      "peak_vram_gb": 0.014,
+      "is_ensemble": false
+    },
+    {
+      "rank": 2,
+      "model_id": "SE_AllModels",
+      "algorithm": "StackedEnsemble",
+      "auc": 0.812391,
+      "training_time_secs": 0.0,
+      "peak_vram_gb": 0.0,
+      "is_ensemble": true
+    },
+    {
+      "rank": 3,
+      "model_id": "SE_BestOfFamily",
+      "algorithm": "StackedEnsemble",
+      "auc": 0.812391,
+      "training_time_secs": 0.0,
+      "peak_vram_gb": 0.0,
+      "is_ensemble": true
+    },
+    {
+      "rank": 4,
+      "model_id": "rf_2",
+      "algorithm": "rf",
+      "auc": 0.796965,
+      "training_time_secs": 23.69,
+      "peak_vram_gb": 0.002,
+      "is_ensemble": false
+    },
+    {
+      "rank": 5,
+      "model_id": "glm_3",
+      "algorithm": "glm",
+      "auc": 0.683993,
+      "training_time_secs": 1.99,
+      "peak_vram_gb": 0.008,
+      "is_ensemble": false
+    }
+  ],
+  "stage_profiles": [
+    {
+      "stage": "baseline",
+      "start_vram_gb": 3.193,
+      "end_vram_gb": 3.423,
+      "peak_vram_gb": 3.423,
+      "delta_gb": 0.23,
+      "duration_secs": 148.1
+    },
+    {
+      "stage": "stacking",
+      "start_vram_gb": 3.423,
+      "end_vram_gb": 3.423,
+      "peak_vram_gb": 3.423,
+      "delta_gb": 0.0,
+      "duration_secs": 4.48
+    }
+  ],
+  "model_vram": [
+    {
+      "model_id": "xgboost_1",
+      "algorithm": "xgboost",
+      "peak_vram_gb": 0.014,
+      "training_time_secs": 2.62
+    },
+    {
+      "model_id": "SE_AllModels",
+      "algorithm": "StackedEnsemble",
+      "peak_vram_gb": 0.0,
+      "training_time_secs": 0.0
+    },
+    {
+      "model_id": "SE_BestOfFamily",
+      "algorithm": "StackedEnsemble",
+      "peak_vram_gb": 0.0,
+      "training_time_secs": 0.0
+    },
+    {
+      "model_id": "rf_2",
+      "algorithm": "rf",
+      "peak_vram_gb": 0.002,
+      "training_time_secs": 23.69
+    },
+    {
+      "model_id": "glm_3",
+      "algorithm": "glm",
+      "peak_vram_gb": 0.008,
+      "training_time_secs": 1.99
+    }
+  ],
+  "config": {
+    "dataset": "Higgs Boson (5M subsample)",
+    "rows": 5000000,
+    "features": 28,
+    "gpu": "RTX 4060 8GB",
+    "pool_strategy": "none",
+    "time_secs": 152.68
+  }
+}

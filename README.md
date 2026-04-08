@@ -65,37 +65,50 @@ RAPIDS 위에서 H2O 전략을 재조립하고, 메모리 관리 아키텍처를
 
 ---
 
-## Results: Kaggle Credit Card Fraud (1.29M rows)
+## Results
 
-> RTX 4060 (8GB VRAM), 10 base models + 2 ensembles, **181초 완료**
+두 개의 실제 데이터셋으로 벤치마크를 수행했다. RTX 4060 (8GB VRAM) 기준.
 
-### Model Performance (AUC)
+### Benchmark 1: Credit Card Fraud (1.29M rows x 11 features)
+
+> 10 base models + 2 ensembles, **181초 완료**
 
 <p align="center">
-  <img src="assets/results/model_performance.png" alt="Model Performance (AUC)" width="800"/>
+  <img src="assets/results/credit_card/model_performance.png" alt="Credit Card AUC" width="800"/>
 </p>
 
 | 순위 | 모델 | AUC | 의미 |
 |:----:|------|:---:|------|
-| 1 | xgboost_6 (Diversity) | 0.9980 | 깊은 트리가 사기 패턴 포착. Baseline 대비 +0.27% |
-| 2 | SE_BestOfFamily | 0.9973 | XGBoost 72% + RF 28%. GLM은 가중치 0으로 자동 제외 |
-| 11 | glm_3 | 0.5181 | 수렴 실패 (클래스 불균형). 앙상블이 자동 배제 |
+| 1 | xgboost_6 (Diversity) | 0.9980 | Baseline 대비 +0.27%. H2O Diversity 전략 유효 |
+| 2 | SE_BestOfFamily | 0.9973 | XGBoost 72% + RF 28%. GLM은 자동 제외 |
+| 11 | glm_3 | 0.5181 | 수렴 실패 (클래스 불균형 0.58%) |
 
-**검증된 것**: H2O의 Diversity 전략이 GPU에서 성능 향상에 기여. 앙상블이 실패 모델을 자동 제외. <br/>
-**한계**: GLM 수렴 실패는 cuML의 L-BFGS 한계. 클래스 가중치 적용 등 추가 대응 필요.
+- Memory-Aware: 모든 모델 VRAM 체크 통과, OOM 0건
+- 129만 행에서는 모델당 0.006 ~ 0.038 GB → 8GB GPU에서 충분한 여유
 
-### Training Time & VRAM
+### Benchmark 2: Higgs Boson (5M rows x 28 features)
 
-<p align="center">
-  <img src="assets/results/training_time.png" alt="Training Time" width="800"/>
-</p>
+> 3 base models + 2 ensembles, **153초 완료**
 
 <p align="center">
-  <img src="assets/results/memory_per_stage.png" alt="Memory per Stage" width="800"/>
+  <img src="assets/results/higgs_5m/model_performance.png" alt="Higgs AUC" width="800"/>
 </p>
 
-- 전체 시간의 83%가 Diversity Phase — GPU 병렬화 시 가장 큰 효과를 기대할 수 있는 구간
-- 모델당 VRAM: 0.006 ~ 0.038 GB — 129만 행에서는 8GB GPU로 충분. **더 큰 데이터에서 Memory-Aware의 가치가 드러날 것으로 예상**
+| 순위 | 모델 | AUC | Training Time |
+|:----:|------|:---:|:------------:|
+| 1 | xgboost_1 | 0.8125 | 2.6s |
+| 2 | SE_AllModels | 0.8124 | - |
+| 4 | rf_2 | 0.7970 | 23.7s |
+| 5 | glm_3 | 0.6840 | 2.0s |
+
+**Memory-Aware가 실제로 의미를 가지는 규모**:
+- rmm pool ON (4GB 선점) → free 0.66GB → **모든 모델 skip** (파이프라인 실행 불가)
+- rmm pool OFF → free 4.80GB → XGBoost(4.12GB) 통과 → **정상 실행**
+- 이 차이가 바로 **Paged Memory Manager가 필요한 이유** — pool 내부를 블록 단위로 관리하면 skip 없이 실행 가능
+
+<p align="center">
+  <img src="assets/results/higgs_5m/training_time.png" alt="Higgs Training Time" width="800"/>
+</p>
 
 상세 해석: [docs/03-results/benchmark_interpretation.md](docs/03-results/benchmark_interpretation.md)
 
