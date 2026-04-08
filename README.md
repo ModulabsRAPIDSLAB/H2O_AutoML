@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/h2o-automl-logo.png" alt="H2O AutoML" width="400"/>
+  <img src="assets/paged-automl_image.png" alt="H2O AutoML" width="400"/>
 </p>
 
 <h1 align="center">PagedAutoML</h1>
