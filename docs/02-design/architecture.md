@@ -91,40 +91,49 @@ Kaggle Credit Card Fraud (1,296,675 rows)로 검증한 결과, 위 설계가 모
 
 ---
 
-## vLLM-inspired Paged Memory (Coarse-grained Paging)
+## vLLM과의 비교: 영감과 한계
 
-### 왜 vLLM인가?
+### 왜 vLLM을 참고했는가?
 
 vLLM은 LLM 추론에서 KV Cache를 Page 단위로 관리하여 GPU 메모리 활용률을 96%+로 끌어올렸다.
 AutoML도 동일한 문제를 갖고 있다 — 수십 개 모델이 제한된 GPU VRAM을 경쟁한다.
+vLLM의 접근법(고정 크기 블록 + 동적 할당 + LRU eviction + swap)을 AutoML에 적용하고자 했다.
 
-### vLLM → AutoML 매핑
+### vLLM → AutoML 매핑 (개념적)
 
-| vLLM | AutoML (paged_automl) | 구현 파일 |
-|------|---------------------|----------|
-| KV Cache Block (16 tokens) | MemoryBlock (64MB) | `memory/paged_manager.py` |
-| Block Table (논리 → 물리) | task_block_map (model → blocks) | `memory/paged_manager.py` |
-| Block Manager | PagedMemoryManager | `memory/paged_manager.py` |
-| Continuous Batching | ContinuousScheduler | `scheduler.py` |
-| Swap GPU ↔ CPU | GPU ↔ Host pinned memory | `memory/paged_manager.py` |
-| LRU Eviction | LRU 기반 블록 회수 | `memory/paged_manager.py` |
-| Pre-allocated Pool | rmm Pool을 Block 단위 분할 | `memory/paged_manager.py` |
+| vLLM | AutoML (paged_automl) | 구현 파일 | 상태 |
+|------|---------------------|----------|:----:|
+| KV Cache Block (16 tokens) | MemoryBlock (64MB) | `memory/paged_manager.py` | 코드만 |
+| Block Table (논리 → 물리) | task_block_map (model → blocks) | `memory/paged_manager.py` | 코드만 |
+| Block Manager | PagedMemoryManager | `memory/paged_manager.py` | 코드만 |
+| Continuous Batching | ContinuousScheduler | `scheduler.py` | 코드만 |
+| Swap GPU ↔ CPU | GPU ↔ Host pinned memory | `memory/paged_manager.py` | 코드만 |
+| LRU Eviction | LRU 기반 블록 회수 | `memory/paged_manager.py` | 코드만 |
 
-### 커스텀 CUDA 커널이 필요 없는 이유
+**"코드만"의 의미**: 구현은 되어 있으나 실제 벤치마크에서 사용/검증된 적이 없다.
+
+### 솔직한 차이점
 
 ```
 vLLM:    연산 도중 (Attention 커널 안에서) Page Table 참조
          → 커스텀 CUDA 커널 필수 (비연속 메모리 직접 접근)
+         → GPU 메모리 활용률 20% → 96% (논문 검증)
 
-AutoML:  연산 사이 (task 경계에서) 블록 할당/회수
-         → 커스텀 커널 불필요 (rmm + cupy로 충분)
+AutoML:  연산 사이 (task 경계에서) 블록 할당/해제
+         → 커스텀 커널 불필요 (Python 수준 관리)
+         → 실효성 미검증
 ```
 
 vLLM은 token-level **fine-grained** paging이고,
-AutoML은 task-level **coarse-grained** paging이다.
-cuML/XGBoost는 블랙박스 라이브러리이므로 훈련 도중 메모리를 제어할 수 없다.
-대신 **훈련 시작 전 블록 할당, 완료 후 즉시 회수**하는 방식으로
-커스텀 커널 없이 동일한 효과를 달성한다.
+우리는 task-level **coarse-grained** paging이다.
+이 차이는 근본적이다: cuML/XGBoost는 블랙박스 라이브러리이므로 훈련 도중 메모리를 제어할 수 없다.
+
+**현재 구현의 실체**: 일반적인 메모리 풀 관리 + LRU eviction이며, vLLM의 PagedAttention과는 관리 시점, 단위, 기술 수준이 모두 다르다. "vLLM-inspired"라는 표현은 **방향성**을 의미하며, 현재 구현이 vLLM 수준이라는 뜻이 아니다.
+
+### vLLM 수준에 도달하려면
+
+1. **중기**: rmm의 `device_memory_resource`를 상속하여 커스텀 allocator를 만들면, cuML/XGBoost가 내부적으로 할당하는 메모리도 블록 단위로 관리 가능
+2. **장기**: cuML이 메모리 접근 패턴을 외부에 노출하거나, AutoML 특화 CUDA 커널을 직접 작성해야 연산 중 Page Table 참조가 가능
 
 ### 동작 흐름
 
