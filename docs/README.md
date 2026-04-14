@@ -35,6 +35,15 @@ RAPIDS 생태계에서 H2O 전략을 재조립하는 설계 문서.
 | [future_directions.md](03-results/future_directions.md) | 개선 방향 3단계 (단기/중기/장기) |
 | [PLAN_memory-aware-gpu-automl.md](03-results/PLAN_memory-aware-gpu-automl.md) | 구현 계획 + 실행 로그 (30/33 완료) |
 
+## Phase 5: GTC 2026 — GPU-Native E2E AutoML
+
+> **2026-04-14 스코프 전환**: 세미나 데모 → GTC 2026 정규세션 투고용 연구. RAPIDS 커널 기반 preprocessing 자동화를 핵심 기여로 재포지셔닝.
+
+| 문서 | 내용 |
+|------|------|
+| [00_strategic_direction.md](05-gtc-2026/00_strategic_direction.md) | 전략 방향 전환, 포지셔닝, 4종 baseline 확정, 3개월 타임라인 |
+| [01_PRD.md](05-gtc-2026/01_PRD.md) | 상세 요구사항 정의서 (Goals/Non-Goals, Operator 카탈로그, 벤치마크 방법론, 마일스톤, 리스크) |
+
 ## Other
 
 | 문서 | 내용 |
