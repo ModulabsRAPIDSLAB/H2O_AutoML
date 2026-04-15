@@ -1,4 +1,4 @@
-# GTC 2026 전략 방향 전환
+# GTC 2027 전략 방향 전환
 
 > **작성일**: 2026-04-14
 > **의사결정권자**: 프로젝트 리드 + 박사급 공동연구자 2명
@@ -22,7 +22,7 @@ CPU-GPU pingpong 없는 완전 GPU 상주 파이프라인을 구축한다.
 
 ### 1-3. 타겟 발표 형태
 
-- **GTC 2026 정규 세션 (45분 talk)**
+- **GTC 2027 정규 세션 (45분 talk)**
 - 보조 산출물: 공개 벤치마크 리포트, 오픈소스 코드, 기술 백서
 
 ---
@@ -91,7 +91,7 @@ CPU-GPU pingpong 없는 완전 GPU 상주 파이프라인을 구축한다.
 | 02_ray_process_level_paging.md | Infrastructure 섹션 | 조연 인프라 |
 | 03_hyperband_asha_oom_prevention.md | Infrastructure 섹션 | 조연 인프라 |
 
-`docs/05-gtc-2026/` 하위에 main narrative 문서들을 신설하고, 04-future는 참조 자료로만 유지한다.
+`docs/05-gtc-2027/` 하위에 main narrative 문서들을 신설하고, 04-future는 참조 자료로만 유지한다.
 
 ### 4-3. 신규 작성 필요 문서
 
@@ -136,7 +136,7 @@ Month 3 (2026-06 ~ 2026-07): Benchmark + arXiv + GTC
 
 ### 6-1. 발표 수락(Acceptance) 기준
 
-- GTC 2026 정규세션 프로포절 통과
+- GTC 2027 정규세션 프로포절 통과
 - Reviewer 피드백에서 "novel contribution"으로 인정
 
 ### 6-2. 기술적 성공 기준

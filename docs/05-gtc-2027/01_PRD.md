@@ -15,7 +15,7 @@
 |:-----|:-----|
 | 프로젝트 시작 | 2026-04-14 |
 | 목표 완료 | 2026-07-14 (3개월) |
-| 최종 산출물 | GTC 2026 정규세션 talk + 기술 백서 + 오픈소스 코드 |
+| 최종 산출물 | GTC 2027 정규세션 talk + 기술 백서 + 오픈소스 코드 |
 | 현재 코드베이스 | `src/paged_automl/` (기존 PagedAutoML 실험) |
 | 대상 하드웨어 | NVIDIA H100 80GB × 5 (확보 예정) |
 | 개발 언어 | Python 3.11+, CUDA 12.x |
@@ -91,7 +91,7 @@ RAPIDS 사용자가 실제로 AutoML을 쓰려면 다음 중 하나를 선택해
 
 ### 3-1. Primary Goal
 
-**GTC 2026 정규세션(45분 talk) 제출 및 수락.**
+**GTC 2027 정규세션(45분 talk) 제출 및 수락.**
 
 수락 판단은 NVIDIA GTC reviewer의 "novel contribution + industry impact + RAPIDS ecosystem fit" 기준에 따른다.
 
@@ -140,7 +140,7 @@ RAPIDS 사용자가 실제로 AutoML을 쓰려면 다음 중 하나를 선택해
 
 ### 4-1. Primary Audience
 
-**NVIDIA GTC 2026 Reviewer 및 참석자**
+**NVIDIA GTC 2027 Reviewer 및 참석자**
 - 관심사: RAPIDS 생태계 확장, 산업 적용 사례, GPU 활용률 극대화, 재현 가능한 벤치마크
 - 판단 기준: novelty, technical depth, measurable impact, reproducibility
 
@@ -790,19 +790,19 @@ H100 1 → 2 → 4 → 5장에서 동일 워크로드 실행.
 
 ### 11-2. 문서 산출물
 
-- `docs/05-gtc-2026/00_strategic_direction.md` (완료)
-- `docs/05-gtc-2026/01_PRD.md` (본 문서)
-- `docs/05-gtc-2026/02_preprocessing_gap_analysis.md` (Month 1 완성)
-- `docs/05-gtc-2026/03_gpu_native_operators_design.md` (Month 1 완성)
-- `docs/05-gtc-2026/04_benchmark_methodology.md` (Month 2 완성)
-- `docs/05-gtc-2026/05_scaling_study_design.md` (Month 2 완성)
-- `docs/05-gtc-2026/06_serving_architecture_decision.md` (Month 2 Week 1 완성 — ONNX vs Triton 결정)
-- `docs/05-gtc-2026/07_gtc_talk_outline.md` (Month 3 완성)
-- `docs/05-gtc-2026/08_arxiv_manuscript.md` 또는 `arxiv/` 하위 LaTeX 소스 (Month 3 Week 3 완성)
+- `docs/05-gtc-2027/00_strategic_direction.md` (완료)
+- `docs/05-gtc-2027/01_PRD.md` (본 문서)
+- `docs/05-gtc-2027/02_preprocessing_gap_analysis.md` (Month 1 완성)
+- `docs/05-gtc-2027/03_gpu_native_operators_design.md` (Month 1 완성)
+- `docs/05-gtc-2027/04_benchmark_methodology.md` (Month 2 완성)
+- `docs/05-gtc-2027/05_scaling_study_design.md` (Month 2 완성)
+- `docs/05-gtc-2027/06_serving_architecture_decision.md` (Month 2 Week 1 완성 — ONNX vs Triton 결정)
+- `docs/05-gtc-2027/07_gtc_talk_outline.md` (Month 3 완성)
+- `docs/05-gtc-2027/08_arxiv_manuscript.md` 또는 `arxiv/` 하위 LaTeX 소스 (Month 3 Week 3 완성)
 
 ### 11-3. 발표 산출물
 
-- GTC 2026 정규세션 proposal abstract
+- GTC 2027 정규세션 proposal abstract
 - GTC talk 슬라이드 (45분 분량)
 - 라이브 데모 영상 + 스크립트
 - **arXiv 기술 백서 (필수 deliverable)** — Month 3 Week 4 제출 목표
@@ -936,7 +936,7 @@ H100 1 → 2 → 4 → 5장에서 동일 워크로드 실행.
 
 | 날짜 | 결정 | 근거 |
 |:-----|:-----|:-----|
-| 2026-04-14 | 프로젝트 스코프를 GTC 2026 정규세션으로 격상 | 팀 합의 |
+| 2026-04-14 | 프로젝트 스코프를 GTC 2027 정규세션으로 격상 | 팀 합의 |
 | 2026-04-14 | Baseline 4종을 H2O/AutoGluon/TPOT/LightAutoML로 확정 | GTC reviewer 설득력 + 조사 범위 현실성 |
 | 2026-04-14 | Multi-GPU 포지션 채택 (consumer GPU 프레이밍 폐기) | H100 5장 확보 추진 |
 | 2026-04-14 | 기존 `paged_manager.py`를 "실패 실험 증거"로 보존 | Ray 도입 motivation 강화 |

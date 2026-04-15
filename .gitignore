@@ -10,3 +10,6 @@ datasets/
 .env
 h2o_*.log
 H2OAutoML_*/
+
+# macOS
+.DS_Store
